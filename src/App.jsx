@@ -5,6 +5,7 @@ import { RiDeleteBin6Line } from "react-icons/ri";
 const App = () => {
   const [todos, setTodos] = useState([]);
   const [newTodo, setNewTodo] = useState({ name: "", description: "" });
+  const [showDetails, setShowDetails] = useState({}); //////////////////
 
   useEffect(() => {
     const storedTodos = localStorage.getItem("todos");
@@ -13,20 +14,29 @@ const App = () => {
     }
   }, []);
 
+
+  const handleCheckboxClick = (todoId, event) => {
+    setTodos(
+      todos.map((todo) =>
+        todo.id === todoId
+          ? { ...todo, isDone: !todo.isDone }
+          : todo
+      )
+      
+    );
+    if (event.target.type === 'radio') {
+      setShowDetails({ ...showDetails, [todoId]: !showDetails[todoId] }); // Toggle visibility
+    }
+  };
+  
+
+
   const handleAddTodo = (event) => {
     event.preventDefault();
     if (newTodo.name && newTodo.description) {
       setTodos([...todos, { id: Date.now(), ...newTodo, isDone: false }]);
       setNewTodo({ name: "", description: "" });
     }
-  };
-
-  const handleCheckboxClick = (todoId) => {
-    setTodos(
-      todos.map((todo) =>
-        todo.id === todoId ? { ...todo, isDone: !todo.isDone } : todo
-      )
-    );
   };
 
   const handleDeleteTodo = (id) => {
@@ -112,15 +122,31 @@ const App = () => {
             </div>
             <div>
               <input
-                type="radio"
+                type="checkbox"
+                name={`radio-${todo.id}`}
+                id={`radio-${todo.id}`}
               />
             </div>
+            <div>
+              <input
+                type="checkbox"
+                name={`radio-${todo.id}`}
+                id={`radio-${todo.id}`}
+              />
+            </div>
+            
             <div className="">
               <RiDeleteBin6Line
                 className="icon"
                 onClick={() => handleDeleteTodo(todo.id)}
               />
             </div>
+            {showDetails[todo.id] && (
+              <ul className="details-list">
+                <li>Priorité: Haute</li>
+                <li>Date d'échéance: 2024-07-15</li>
+              </ul>
+            )}
           </li>
         ))}
       </ol>
