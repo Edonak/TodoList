@@ -1,4 +1,4 @@
-import{ useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import "./App.css";
 import { RiDeleteBin6Line } from "react-icons/ri";
 
@@ -17,7 +17,7 @@ const App = () => {
     event.preventDefault();
     if (newTodo.name && newTodo.description) {
       setTodos([...todos, { id: Date.now(), ...newTodo, isDone: false }]);
-      setNewTodo({ name: "", description: "" }); // Clear input fields
+      setNewTodo({ name: "", description: "" });
     }
   };
 
@@ -35,6 +35,14 @@ const App = () => {
     localStorage.setItem("todos", JSON.stringify(updatedTodos));
   };
 
+  const handleToggleTodo = (id) => {
+    setTodos(
+      todos.map((todo) =>
+        todo.id === id ? { ...todo, isDone: !todo.isDone } : todo
+      )
+    );
+  };
+
   const handleInputChange = (event) => {
     const { name, value } = event.target;
     setNewTodo((prev) => ({ ...prev, [name]: value }));
@@ -43,14 +51,11 @@ const App = () => {
   useEffect(() => {
     localStorage.setItem("todos", JSON.stringify(todos));
   }, [todos]);
-  
+
   return (
     <div className="App">
       <h2>Todolist</h2>
-      <form
-        className="form-container"
-        onSubmit={handleAddTodo}
-      >
+      <form className="form-container" onSubmit={handleAddTodo}>
         <input
           type="text"
           name="name"
@@ -71,13 +76,16 @@ const App = () => {
         {todos.map((todo) => (
           <li
             key={todo.id}
-            className={todo.isDone ? "todo-done todo-line-through" : "todo-list-item"}
+            className={
+              todo.isDone ? "todo-done todo-line-through" : "todo-list-item"
+            }
           >
             <div className="tache-list">
               <span
-                style={{ textDecoration: todo.isDone ? "line-through" : "none",
-                  color: todo.isDone ? "green" : "white", 
-                 }}
+                style={{
+                  textDecoration: todo.isDone ? "line-through" : "none",
+                  color: todo.isDone ? "green" : "white",
+                }}
                 onClick={() => handleCheckboxClick(todo.id)}
               >
                 {todo.name}
@@ -85,9 +93,10 @@ const App = () => {
             </div>
             <div className="tache-list">
               <p
-                style={{ textDecoration: todo.isDone ? "line-through" : "none",
-                  color: todo.isDone ? "green" : "white", 
-                 }}
+                style={{
+                  textDecoration: todo.isDone ? "line-through" : "none",
+                  color: todo.isDone ? "green" : "white",
+                }}
                 onClick={() => handleCheckboxClick(todo.id)}
               >
                 {todo.description}
@@ -96,10 +105,14 @@ const App = () => {
             <div>
               <input
                 type="checkbox"
-                name={`checkbox-${todo.id}`}
-                id={`checkbox-${todo.id}`}
-                checked={todo.isDone}
-                onChange={() => handleCheckboxClick(todo.id)}
+                name={`radio-${todo.id}`}
+                id={`radio-${todo.id}`}
+                onChange={() => handleToggleTodo(todo.id)}
+              />
+            </div>
+            <div>
+              <input
+                type="radio"
               />
             </div>
             <div className="">
