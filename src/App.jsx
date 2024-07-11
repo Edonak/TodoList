@@ -1,41 +1,17 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 import { RiDeleteBin6Line } from "react-icons/ri";
 
 const App = () => {
   const [todos, setTodos] = useState([]);
   const [newTodo, setNewTodo] = useState({ name: "", description: "" });
-  const [showDetails, setShowDetails] = useState({}); //////////////////
-
-  useEffect(() => {
-    const storedTodos = localStorage.getItem("todos");
-    if (storedTodos) {
-      setTodos(JSON.parse(storedTodos));
-    }
-  }, []);
-
-
-  const handleCheckboxClick = (todoId, event) => {
-    setTodos(
-      todos.map((todo) =>
-        todo.id === todoId
-          ? { ...todo, isDone: !todo.isDone }
-          : todo
-      )
-      
-    );
-    if (event.target.type === 'radio') {
-      setShowDetails({ ...showDetails, [todoId]: !showDetails[todoId] }); // Toggle visibility
-    }
-  };
-  
-
 
   const handleAddTodo = (event) => {
     event.preventDefault();
     if (newTodo.name && newTodo.description) {
-      setTodos([...todos, { id: Date.now(), ...newTodo, isDone: false }]);
+      setTodos([...todos, { id: Date.now(), ...newTodo, color: "white", isBarred: false }]); // Initial color & isBarred
       setNewTodo({ name: "", description: "" });
+      localStorage.setItem("todos", JSON.stringify(todos));
     }
   };
 
@@ -45,22 +21,26 @@ const App = () => {
     localStorage.setItem("todos", JSON.stringify(updatedTodos));
   };
 
-  const handleToggleTodo = (id) => {
-    setTodos(
-      todos.map((todo) =>
-        todo.id === id ? { ...todo, isDone: !todo.isDone } : todo
-      )
-    );
-  };
-
   const handleInputChange = (event) => {
     const { name, value } = event.target;
     setNewTodo((prev) => ({ ...prev, [name]: value }));
   };
-
   useEffect(() => {
-    localStorage.setItem("todos", JSON.stringify(todos));
-  }, [todos]);
+    const storedTodos = localStorage.getItem("todos");
+    if (storedTodos) {
+      setTodos(JSON.parse(storedTodos));
+    }
+  }, []);
+  const handleSelectChange = (todoId, event) => {
+    const selectedValue = event.target.value;
+    const newColor = selectedValue === "padding" ? "orange" : selectedValue === "pause" ? "blue" : "green";
+    const isBarred = selectedValue === "terminer"; 
+    setTodos(
+      todos.map((todo) =>
+        todo.id === todoId ? { ...todo, color: newColor, isBarred } : todo
+      )
+    );
+  };
 
   return (
     <div className="App">
@@ -87,66 +67,28 @@ const App = () => {
           <li
             key={todo.id}
             className={
-              todo.isDone ? "todo-done todo-line-through" : "todo-list-item"
+              todo.isDone ? "todo-done todo-line-through" : "todo-list-item" + (todo.isBarred ? " barred" : "")
             }
           >
             <div className="tache-list">
-              <span
-                style={{
-                  textDecoration: todo.isDone ? "line-through" : "none",
-                  color: todo.isDone ? "green" : "white",
-                }}
-                onClick={() => handleCheckboxClick(todo.id)}
-              >
+              <span style={{ color: todo.color, textDecoration: todo.isBarred ? "line-through" : "none" }}>
                 {todo.name}
               </span>
             </div>
             <div className="tache-list">
-              <p
-                style={{
-                  textDecoration: todo.isDone ? "line-through" : "none",
-                  color: todo.isDone ? "green" : "white",
-                }}
-                onClick={() => handleCheckboxClick(todo.id)}
-              >
+              <p style={{ color: todo.color, textDecoration: todo.isBarred ? "line-through" : "none" }}>
                 {todo.description}
               </p>
             </div>
-            <div>
-              <input
-                type="checkbox"
-                name={`radio-${todo.id}`}
-                id={`radio-${todo.id}`}
-                onChange={() => handleToggleTodo(todo.id)}
-              />
-            </div>
-            <div>
-              <input
-                type="checkbox"
-                name={`radio-${todo.id}`}
-                id={`radio-${todo.id}`}
-              />
-            </div>
-            <div>
-              <input
-                type="checkbox"
-                name={`radio-${todo.id}`}
-                id={`radio-${todo.id}`}
-              />
-            </div>
-            
+            <select value={todo.color} onChange={(event) => handleSelectChange(todo.id, event)}>
+              <option value="">--Etat--</option>
+              <option value="padding">En attente</option>
+              <option value="pause">En cours</option>
+              <option value="terminer">Terminé</option>
+            </select>
             <div className="">
-              <RiDeleteBin6Line
-                className="icon"
-                onClick={() => handleDeleteTodo(todo.id)}
-              />
+              <RiDeleteBin6Line className="icon" onClick={() => handleDeleteTodo(todo.id)} />
             </div>
-            {showDetails[todo.id] && (
-              <ul className="details-list">
-                <li>Priorité: Haute</li>
-                <li>Date d'échéance: 2024-07-15</li>
-              </ul>
-            )}
           </li>
         ))}
       </ol>
