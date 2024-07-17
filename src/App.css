@@ -9,12 +9,18 @@ input[type="text"]{
   border: none;
   border-radius: 0.2rem;
   text-align: center;
-  margin-top: 0.6rem;
   border: 0 2px 0 2px;
 }
-input[type="button"]{
-  margin-top: 2rem;
-  width:130%;
+input[type="number"]{
+  width:80%;
+  height: 4vh;
+  border: none;
+  border-radius: 0.2rem;
+  text-align: center;
+  border: 0 2px 0 2px;
+}
+button{
+  width:80%;
   border-radius: 0.2rem;
   text-align: center;
   height: 5vh;
