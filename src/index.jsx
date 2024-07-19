@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import { Link } from "react-router-dom";
 
-const TodoList = () => {
+const Index = () => {
   const [todos, setTodos] = useState([]);
   const [newTodo, setNewTodo] = useState({ name: "", description: "", targetDuration: 0 });
 
@@ -94,9 +94,6 @@ const TodoList = () => {
   return (
     <div className="App">
       <h2>Todolist</h2>
-      <Link to="/plus">
-        <p>Voir Plus</p>
-      </Link>
       <form className="form-container" onSubmit={handleAddTodo}>
         <input
           type="text"
@@ -158,5 +155,5 @@ const TodoList = () => {
     );
   };
   
-  export default TodoList;
+  export default Index;
   
