@@ -4,7 +4,11 @@ import { Link } from "react-router-dom";
 
 const TodoList = () => {
   const [todos, setTodos] = useState([]);
-  const [newTodo, setNewTodo] = useState({ name: "", description: "", targetDuration: "" });
+  const [newTodo, setNewTodo] = useState({
+    name: "",
+    description: "",
+    targetDuration: "",
+  });
 
   const handleAddTodo = (event) => {
     event.preventDefault();
@@ -17,7 +21,7 @@ const TodoList = () => {
           color: "white",
           isBarred: false,
           startTime: Date.now(),
-          duration: 0,
+          duration: "0",
         },
       ]);
       setNewTodo({ name: "", description: "", targetDuration: "" });
@@ -54,31 +58,36 @@ const TodoList = () => {
     const isBarred = selectedValue === "terminer";
     setTodos(
       todos.map((todo) =>
-        todo.id === todoId
-          ? { ...todo, color: newColor, isBarred }
-          : todo
+        todo.id === todoId ? { ...todo, color: newColor, isBarred } : todo
       )
     );
   };
 
-  // Chrono logic
   useEffect(() => {
     const intervalId = setInterval(() => {
       setTodos((prevTodos) =>
         prevTodos.map((todo) => {
           if (todo.targetDuration > 0) {
             const elapsedTime = Date.now() - todo.startTime;
-            // Calculate remaining time (targetDuration minus elapsedTime)
-            const remainingTime = Math.max(todo.targetDuration - elapsedTime, 0);
-            const minutes = Math.floor(remainingTime / 60000);
-            const seconds = Math.floor((remainingTime % 60000) / 1000);
-            const formattedTime = `${minutes}min:${seconds.toString().padStart(2, " ")}sec`;
-
+            const remainingTime = Math.max(
+              todo.targetDuration - elapsedTime,
+              0
+            );
+  
+            // Calcul des minutes et secondes
+            const minutes = Math.floor(remainingTime / 60);
+            const seconds = remainingTime % 60;
+  
+            // Formatage du temps
+            const formattedTime = `${minutes}min:${seconds
+              .toString()
+              .padStart(2, "0")}sec`;
+  
             return {
               ...todo,
-              duration: elapsedTime, // Keep track of elapsed time
-              isBarred: remainingTime === 0, // Mark as finished when remainingTime reaches 0
-              color: remainingTime === 0 ? "green" : todo.color, // Change color to green when finished
+              duration: elapsedTime,
+              isBarred: remainingTime === 0,
+              color: remainingTime === 0 ? "green" : todo.color,
               formattedTime,
             };
           } else {
@@ -87,14 +96,14 @@ const TodoList = () => {
         })
       );
     }, 1000);
-
+  
     return () => clearInterval(intervalId);
   }, [todos]);
-
+  
   return (
     <div className="App">
       <h2>Todolist</h2>
-      <Link to='/plus'>
+      <Link to="/plus">
         <p>Voir Plus</p>
       </Link>
       <form className="form-container" onSubmit={handleAddTodo}>
@@ -118,45 +127,60 @@ const TodoList = () => {
           placeholder="Durée tache en seconde"
           value={newTodo.targetDuration}
           onChange={handleInputChange}
-          />
-          <button type="submit">Ajouter</button>
-        </form>
-        <ol>
-          {todos.map((todo) => (
-            <li
-              key={todo.id}
-              className={
-                todo.isDone
-                  ? "todo-done todo-line-through"
-                  : "todo-list-item" + (todo.isBarred ? " barred" : "")
-              }
+        />
+        <button type="submit">Ajouter</button>
+      </form>
+      <ol>
+        {todos.map((todo) => (
+          <li
+            key={todo.id}
+            className={
+              todo.isDone
+                ? "todo-done todo-line-through"
+                : "todo-list-item" + (todo.isBarred ? " barred" : "")
+            }
+          >
+            <div className="tache-list">
+              <span
+                style={{
+                  color: todo.color,
+                  textDecoration: todo.isBarred ? "line-through" : "none",
+                }}
+              >
+                {todo.name}
+              </span>
+            </div>
+            <div className="tache-list">
+              <p
+                style={{
+                  color: todo.color,
+                  textDecoration: todo.isBarred ? "line-through" : "none",
+                }}
+              >
+                {todo.description}
+              </p>
+            </div>
+            <select
+              value={todo.color}
+              onChange={(event) => handleSelectChange(todo.id, event)}
             >
-              <div className="tache-list">
-                <span style={{ color: todo.color, textDecoration: todo.isBarred ? "line-through" : "none" }}>
-                  {todo.name}
-                </span>
-              </div>
-              <div className="tache-list">
-                <p style={{ color: todo.color, textDecoration: todo.isBarred ? "line-through" : "none" }}>
-                  {todo.description}
-                </p>
-              </div>
-              <select value={todo.color} onChange={(event) => handleSelectChange(todo.id, event)}>
-                <option value="">--Etat--</option>
-                <option value="padding">En attente</option>
-                <option value="pause">En cours</option>
-                <option value="terminer">Terminé</option>
-              </select>
-              <div>Temps écoulé: {todo.formattedTime}</div>
-              <div className="">
-                <RiDeleteBin6Line className="icon" onClick={() => handleDeleteTodo(todo.id)} />
-              </div>
-            </li>
-          ))}
-        </ol>
-      </div>
-    );
-  };
-  
-  export default TodoList;
-  
+              <option value="">--Etat--</option>
+              <option value="padding">En attente</option>
+              <option value="pause">En cours</option>
+              <option value="terminer">Terminé</option>
+            </select>
+            <div>Temps écoulé: {todo.formattedTime}</div>
+            <div className="">
+              <RiDeleteBin6Line
+                className="icon"
+                onClick={() => handleDeleteTodo(todo.id)}
+              />
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+};
+
+export default TodoList;
