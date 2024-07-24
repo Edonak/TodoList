@@ -1,53 +1,45 @@
-import { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { RiDeleteBin6Line } from "react-icons/ri";
-import { Link } from "react-router-dom";
 
-const TodoList = () => {
-  const [todos, setTodos] = useState([]);
-  const [newTodo, setNewTodo] = useState({
-    name: "",
-    description: "",
-    targetDuration: "",
-  });
+const Todolist = () => {
+  const [tasks, setTasks] = useState([]); // Liste des tâches
+  const [taskName, setTaskName] = useState(""); // Nom de la tâche
+  const [n, setN] = useState(0);
+  const [taskDescription, setTaskDescription] = useState("");
 
-  const handleAddTodo = (event) => {
-    event.preventDefault();
-    if (newTodo.name && newTodo.description) {
-      setTodos([
-        ...todos,
+  //supprimer une tache
+  const handleDeleteTask = (id) => {
+    const updatedTasks = tasks.filter((task) => task.id !== id);
+    setTasks(updatedTasks);
+    localStorage.setItem("tasks", JSON.stringify(updatedTasks));
+  };
+  // Fonction pour ajouter une tâche
+  const addTask = () => {
+    if (taskName.trim() !== "") {
+      setTasks((prevTasks) => [
+        ...prevTasks,
         {
           id: Date.now(),
-          ...newTodo,
-          color: "white",
-          isBarred: false,
-          startTime: Date.now(),
-          duration: "0",
+          name: taskName,
+          description: taskDescription,
+          duration: n, // Utilise la valeur de n comme timing initial
+          color: "white", // Couleur par défaut
+          isBarred: false, // Par défaut, non barré
         },
       ]);
-      setNewTodo({ name: "", description: "", targetDuration: "" });
-      localStorage.setItem("todos", JSON.stringify(todos));
+      setTaskName("");
+      setTaskDescription(""); // Réinitialise le champ de saisie
     }
-  };
-
-  const handleDeleteTodo = (id) => {
-    const updatedTodos = todos.filter((todo) => todo.id !== id);
-    setTodos(updatedTodos);
-    localStorage.setItem("todos", JSON.stringify(updatedTodos));
-  };
-
-  const handleInputChange = (event) => {
-    const { name, value } = event.target;
-    setNewTodo((prev) => ({ ...prev, [name]: value }));
   };
 
   useEffect(() => {
-    const storedTodos = localStorage.getItem("todos");
-    if (storedTodos) {
-      setTodos(JSON.parse(storedTodos));
+    const storedTasks = localStorage.getItem("tasks");
+    if (storedTasks) {
+      setTasks(JSON.parse(storedTasks));
     }
   }, []);
 
-  const handleSelectChange = (todoId, event) => {
+  const handleSelectChange = (taskId, event) => {
     const selectedValue = event.target.value;
     const newColor =
       selectedValue === "padding"
@@ -56,124 +48,98 @@ const TodoList = () => {
         ? "blue"
         : "green";
     const isBarred = selectedValue === "terminer";
-    setTodos(
-      todos.map((todo) =>
-        todo.id === todoId ? { ...todo, color: newColor, isBarred } : todo
+    setTasks(
+      tasks.map((task) =>
+        tasks.id === taskId ? { ...task, color: newColor, isBarred } : task
       )
     );
   };
 
+  // Effet secondaire pour gérer le compte à rebours
   useEffect(() => {
     const intervalId = setInterval(() => {
-      setTodos((prevTodos) =>
-        prevTodos.map((todo) => {
-          if (todo.targetDuration > 0) {
-            const elapsedTime = Date.now() - todo.startTime;
-            const remainingTime = Math.max(
-              todo.targetDuration - elapsedTime,
-              0
-            );
-  
-            // Calcul des minutes et secondes
-            const minutes = Math.floor(remainingTime / 60);
-            const seconds = remainingTime % 60;
-  
-            // Formatage du temps
-            const formattedTime = `${minutes}min:${seconds
-              .toString()
-              .padStart(2, "0")}sec`;
-  
-            return {
-              ...todo,
-              duration: elapsedTime,
-              isBarred: remainingTime === 0,
-              color: remainingTime === 0 ? "green" : todo.color,
-              formattedTime,
-            };
-          } else {
-            return todo;
-          }
-        })
+      setTasks((prevTasks) =>
+        prevTasks.map((task) => ({
+          ...task,
+          duration: Math.max(task.duration - 1, 0),
+        }))
       );
     }, 1000);
-  
-    return () => clearInterval(intervalId);
-  }, [todos]);
-  
+
+    return () => clearInterval(intervalId); // Nettoyer l'intervalle au démontage du composant
+  }, []);
+
   return (
     <div className="App">
       <h2>Todolist</h2>
-      <Link to="/plus">
-        <p>Voir Plus</p>
-      </Link>
-      <form className="form-container" onSubmit={handleAddTodo}>
+      <div className="form-container">
         <input
           type="text"
-          name="name"
           placeholder="Nom de la tâche"
-          value={newTodo.name}
-          onChange={handleInputChange}
+          value={taskName}
+          onChange={(e) => setTaskName(e.target.value)}
         />
         <input
           type="text"
-          name="description"
-          placeholder="Description"
-          value={newTodo.description}
-          onChange={handleInputChange}
+          placeholder="Description de la tâche"
+          value={taskDescription}
+          onChange={(e) => setTaskDescription(e.target.value)}
         />
         <input
           type="number"
-          name="targetDuration"
-          placeholder="Durée tache en seconde"
-          value={newTodo.targetDuration}
-          onChange={handleInputChange}
+          placeholder="Entrer n"
+          value={n}
+          onChange={(e) => setN(parseInt(e.target.value))}
         />
-        <button type="submit">Ajouter</button>
-      </form>
+        <button onClick={addTask}>Ajouter</button>
+      </div>
       <ol>
-        {todos.map((todo) => (
+        {tasks.map((task, index) => (
           <li
-            key={todo.id}
+            key={task.id}
             className={
-              todo.isDone
+              task.isDone
                 ? "todo-done todo-line-through"
-                : "todo-list-item" + (todo.isBarred ? " barred" : "")
+                : "todo-list-item" + (task.isBarred ? " barred" : "")
             }
           >
             <div className="tache-list">
               <span
                 style={{
-                  color: todo.color,
-                  textDecoration: todo.isBarred ? "line-through" : "none",
+                  color: task.duration === 0 ? "green" : "white",
+                  textDecoration: task.duration === 0 ? "line-through" : "none",
                 }}
               >
-                {todo.name}
+                {task.name}
               </span>
             </div>
             <div className="tache-list">
-              <p
+              <span
                 style={{
-                  color: todo.color,
-                  textDecoration: todo.isBarred ? "line-through" : "none",
+                  color: task.duration === 0 ? "green" : "white",
+                  textDecoration: task.duration === 0 ? "line-through" : "none",
                 }}
               >
-                {todo.description}
-              </p>
+                {task.description}
+              </span>
             </div>
             <select
-              value={todo.color}
-              onChange={(event) => handleSelectChange(todo.id, event)}
+              value={task.color}
+              onChange={(event) => handleSelectChange(task.id, event)}
             >
               <option value="">--Etat--</option>
               <option value="padding">En attente</option>
               <option value="pause">En cours</option>
               <option value="terminer">Terminé</option>
             </select>
-            <div>Temps écoulé: {todo.formattedTime}</div>
+            <div className="tache-list">
+              {Math.floor(task.duration / 60)}min:{task.duration % 60}sec
+            </div>
+
             <div className="">
               <RiDeleteBin6Line
                 className="icon"
-                onClick={() => handleDeleteTodo(todo.id)}
+                onClick={() => handleDeleteTask(task.id)}
               />
             </div>
           </li>
@@ -183,4 +149,4 @@ const TodoList = () => {
   );
 };
 
-export default TodoList;
+export default Todolist;
