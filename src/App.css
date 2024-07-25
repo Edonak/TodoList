@@ -34,7 +34,9 @@ h2{
   color: blanchedalmond;
 }
 .App{
-  height: 50vh;
+  min-height: 100px;
+  max-height: 500px;
+  overflow-y: auto;
   background: #9694942c;
   width: 50%;
   margin: 0 auto;
@@ -88,4 +90,37 @@ h2{
   align-items: center;
   gap: 4rem;
   color: white;
+}
+
+li.selected{
+  border: 2px solid silver;
+  margin-right: 2rem;
+  padding: 0 1rem;
+}
+
+
+li.selected.pending {
+  background-color: orange;
+}
+
+li.selected.paused {
+  background-color: rgb(13, 140, 232);
+}
+
+li.selected.terminer {
+  background-color: green;
+}
+
+li.selected.terminer span{
+  text-decoration: line-through;
+}
+
+#no-selected{
+  background-color: #57c0f8 ;
+}
+
+li{
+  display: flex;
+  justify-content: space-between;
+  padding: 0 1rem;
 }

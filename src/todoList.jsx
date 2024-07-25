@@ -7,6 +7,9 @@ const Todolist = () => {
   const [n, setN] = useState(0);
   const [taskDescription, setTaskDescription] = useState("");
 
+  const [taskSelected, setTask] = useState(null);
+  const [taskSelectedTime, setTaskTime] = useState(null);
+
   //supprimer une tache
   const handleDeleteTask = (id) => {
     const updatedTasks = tasks.filter((task) => task.id !== id);
@@ -19,7 +22,7 @@ const Todolist = () => {
       setTasks((prevTasks) => [
         ...prevTasks,
         {
-          id: Date.now(),
+          id: tasks && tasks.length + 1,
           name: taskName,
           description: taskDescription,
           duration: n, // Utilise la valeur de n comme timing initial
@@ -28,7 +31,8 @@ const Todolist = () => {
         },
       ]);
       setTaskName("");
-      setTaskDescription(""); // Réinitialise le champ de saisie
+      setTaskDescription("");
+      setTaskTime(tasks && tasks.length + 1);
     }
   };
 
@@ -41,16 +45,22 @@ const Todolist = () => {
 
   const handleSelectChange = (taskId, event) => {
     const selectedValue = event.target.value;
+    setTask({
+      id: taskId,
+      status: selectedValue,
+    });
     const newColor =
       selectedValue === "padding"
         ? "orange"
         : selectedValue === "pause"
         ? "blue"
         : "green";
-    const isBarred = selectedValue === "terminer";
-    setTasks(
-      tasks.map((task) =>
-        tasks.id === taskId ? { ...task, color: newColor, isBarred } : task
+
+    setTasks((prevTasks) =>
+      prevTasks.map((task) =>
+        task.id === taskId
+          ? { ...task, color: newColor, isBarred: selectedValue === "terminer" }
+          : task
       )
     );
   };
@@ -94,56 +104,64 @@ const Todolist = () => {
         <button onClick={addTask}>Ajouter</button>
       </div>
       <ol>
-        {tasks.map((task, index) => (
-          <li
-            key={task.id}
-            className={
-              task.isDone
-                ? "todo-done todo-line-through"
-                : "todo-list-item" + (task.isBarred ? " barred" : "")
-            }
-          >
-            <div className="tache-list">
-              <span
-                style={{
-                  color: task.duration === 0 ? "green" : "white",
-                  textDecoration: task.duration === 0 ? "line-through" : "none",
-                }}
-              >
-                {task.name}
-              </span>
-            </div>
-            <div className="tache-list">
-              <span
-                style={{
-                  color: task.duration === 0 ? "green" : "white",
-                  textDecoration: task.duration === 0 ? "line-through" : "none",
-                }}
-              >
-                {task.description}
-              </span>
-            </div>
-            <select
-              value={task.color}
-              onChange={(event) => handleSelectChange(task.id, event)}
+        {tasks.map((task) => {
+          return (
+            <li
+              key={task.id}
+              className={
+                taskSelected &&
+                taskSelected.id === task.id &&
+                taskSelected &&
+                taskSelected.status === "padding"
+                  ? "selected pending"
+                  : taskSelected &&
+                    taskSelected.id === task.id &&
+                    taskSelected &&
+                    taskSelected.status === "pause"
+                  ? "selected paused"
+                  : taskSelected &&
+                    taskSelected.id === task.id &&
+                    taskSelected &&
+                    taskSelected.status === "terminer"
+                  ? "selected terminer"
+                  : taskSelectedTime === task.id &&
+                    parseInt(task.duration) === 0
+                  ? "selected terminer"
+                  : "no-selected"
+              }
             >
-              <option value="">--Etat--</option>
-              <option value="padding">En attente</option>
-              <option value="pause">En cours</option>
-              <option value="terminer">Terminé</option>
-            </select>
-            <div className="tache-list">
-              {Math.floor(task.duration / 60)}min:{task.duration % 60}sec
-            </div>
+              <div className="tache-list">
+                <span>{task.name}</span>
+              </div>
+              <div className="tache-list">
+                <span>{task.description}</span>
+              </div>
+              <select onChange={(event) => handleSelectChange(task.id, event)}>
+                <option value="">--Etat--</option>
+                <option value="padding">En attente</option>
+                <option value="pause">En cours</option>
+                <option value="terminer">Terminé</option>
+              </select>
+              <div className="tache-list">
+                {Math.floor(task.duration / 60)}min:{task.duration % 60}sec
+              </div>
 
-            <div className="">
-              <RiDeleteBin6Line
-                className="icon"
-                onClick={() => handleDeleteTask(task.id)}
-              />
-            </div>
-          </li>
-        ))}
+              <span>
+                {" "}
+                Status :{" "}
+                {taskSelected && taskSelected.id === task.id &&
+                  taskSelected &&
+                  taskSelected.status}
+              </span>
+              <div className="">
+                <RiDeleteBin6Line
+                  className="icon"
+                  onClick={() => handleDeleteTask(task.id)}
+                />
+              </div>
+            </li>
+          );
+        })}
       </ol>
     </div>
   );
